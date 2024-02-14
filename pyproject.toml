@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "fuck-venmo"
+version = "0.1.0"
+description = "Fuck Venmo"
+authors = ["Radon Rosborough <radon@intuitiveexplanations.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
