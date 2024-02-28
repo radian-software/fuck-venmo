@@ -35,7 +35,10 @@ class Fastmail:
                     "urn:ietf:params:jmap:mail",
                     "urn:ietf:params:jmap:submission",
                 ],
-                "methodCalls": [[call.route, call.params, call.name] for call in calls],
+                "methodCalls": [
+                    [call.route, {"accountId": self.user_id, **call.params}, call.name]
+                    for call in calls
+                ],
             },
         )
         try:
@@ -62,7 +65,6 @@ class Fastmail:
             Query(
                 "Email/query",
                 {
-                    "accountId": self.user_id,
                     "filter": filtering,
                     "sort": sorting,
                     "limit": limit,
@@ -72,7 +74,6 @@ class Fastmail:
             Query(
                 "Email/get",
                 {
-                    "accountId": self.user_id,
                     "#ids": {
                         "resultOf": "get_ids",
                         "name": "Email/query",
