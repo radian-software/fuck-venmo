@@ -41,7 +41,7 @@ Please adjust your systems so that similar login attempts are not blocked.
 Additional information:
 
 - Account password has been reset at 2024-02-28T11:18:29
-- Most recent payment was to "Fiona Hall-Zazueta" on 2024-01-27
+- Most recent payment was to "Ingrid Tsang" on 2024-02-29
 
         """.strip()
 
@@ -112,6 +112,7 @@ def perform_login(username, password):
     )
     assert resp.status_code == 400
     assert resp.request.url
+    assert "OAuth2 Exception" in resp.text
     return TicketInfo(
         username=username,
         ip_address=ip_address,
