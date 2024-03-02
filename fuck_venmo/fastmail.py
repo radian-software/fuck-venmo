@@ -1,10 +1,15 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+import random
+import time
 from typing import Any
 
 import bs4
 from html2text import html2text
 import requests
 from requests.models import HTTPError
+
+from fuck_venmo.util import iso_format_but_not_fucked_up
 
 
 class JMAPError(Exception):
@@ -116,6 +121,27 @@ class Fastmail:
                 collected_content["textBody"] or collected_content["htmlBody"]
             )
         return emails["list"]
+
+    def wait_for_email(self, filtering: dict, since: datetime, timeout: timedelta):
+        if since > datetime.now():
+            raise RuntimeError("can't wait for email that hasn't been sent yet")
+        deadline = since + timeout
+        delay = timedelta(seconds=1)
+        while True:
+            matches = self.search_emails(
+                {
+                    **filtering,
+                    "after": iso_format_but_not_fucked_up(since),
+                    "before": iso_format_but_not_fucked_up(since + timeout),
+                },
+                limit=1,
+            )
+            if matches:
+                return matches[0]
+            if datetime.now() > deadline:
+                raise TimeoutError("expected email didn't arrive before timeout")
+            time.sleep(delay.total_seconds() * random.random())
+            delay *= 2
 
     def send_email(
         self,

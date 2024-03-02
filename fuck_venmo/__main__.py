@@ -15,4 +15,6 @@ v = VenmoClient(
     f,
 )
 
-v.trigger_password_reset()
+# v.trigger_password_reset()
+# v.fetch_password_reset_data()
+v.complete_password_reset()
