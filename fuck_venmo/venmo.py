@@ -82,7 +82,7 @@ class VenmoClient:
             params = {}
             for key in ("reset_key", "user_external_id", "ts", "client"):
                 match = re.search(
-                    r"[?&]{key}=(?P<key>[^&]+)".format(key=key), email["text"]
+                    r"[?&]{key}=(?P<key>[^&)]+)".format(key=key), email["text"]
                 )
                 if not match:
                     raise RuntimeError(
@@ -105,10 +105,19 @@ class VenmoClient:
                 },
             )
             csrf = self.get_csrf_data(resp)
+            j = {
+                "newPassword": self.password,
+                "retypeNewPassword": self.password,
+                "resetKey": params["reset_key"],
+                "externalId": params["user_external_id"],
+                "clientId": "10",
+                "ts": params["ts"],
+            }
             resp = requests.post(
                 "https://venmo.com/api/account/changePassword",
                 headers={
-                    "user-agent": self.user_agent,
+                    "User-Agent": self.user_agent,
+                    "csrf-token": csrf.token,
                     "xsrf-token": csrf.token,
                 },
                 cookies={
@@ -116,13 +125,17 @@ class VenmoClient:
                     "_csrf": csrf.cookie,
                 },
                 json={
-                    "clientId": "10",
-                    "externalId": params["user_external_id"],
                     "newPassword": self.password,
-                    "resetKey": params["reset_key"],
                     "retypeNewPassword": self.password,
+                    "resetKey": params["reset_key"],
+                    "externalId": params["user_external_id"],
+                    "clientId": "10",
+                    "client": params["client"],
                     "ts": params["ts"],
                 },
                 allow_redirects=False,
             )
-            resp.raise_for_status()
+            try:
+                resp.raise_for_status()
+            except Exception:
+                raise RuntimeError(resp.text)
