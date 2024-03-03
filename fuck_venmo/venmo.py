@@ -17,6 +17,7 @@ class VenmoClient:
     def __init__(
         self,
         email_address: str,
+        username: str,
         password: str,
         bank_account_number: str,
         fastmail: Fastmail,
@@ -25,6 +26,7 @@ class VenmoClient:
         self.user_agent = (
             "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0"
         )
+        self.username = username
         self.email_address = email_address
         self.password = password
         self.bank_account_number = bank_account_number
@@ -68,6 +70,8 @@ class VenmoClient:
                 operation_name="forgotPassword",
             )
             info["triggered_end"] = datetime.now().timestamp()
+            if "venmo_password_reset" in state:
+                state["venmo_last_password_reset"] = state["venmo_password_reset"]
             state["venmo_password_reset"] = info
 
     def fetch_password_reset_data(self):
@@ -94,6 +98,9 @@ class VenmoClient:
     def complete_password_reset(self):
         with state_loaded() as state:
             params = state["venmo_password_reset"]["reset_params"]
+            info = {
+                "completed_start": datetime.now().timestamp(),
+            }
             resp = requests.get(
                 "https://venmo.com/account/password-new",
                 params=params,
@@ -139,3 +146,56 @@ class VenmoClient:
                 resp.raise_for_status()
             except Exception:
                 raise RuntimeError(resp.text)
+            info["completed_end"] = datetime.now().timestamp()
+            state["venmo_password_reset"] = info
+            state["venmo_last_password_reset"] = state["venmo_password_reset"]
+
+    def reset_password(self):
+        self.trigger_password_reset()
+        self.fetch_password_reset_data()
+        self.complete_password_reset()
+
+    def is_login_blocked(self):
+        requests.get(
+            "https://venmo.com/account/sign-in", cookies={"v_id": self.device_id}
+        )
+        csrf = self.get_csrf_data(
+            requests.get(
+                "https://venmo.com/account/sign-in",
+                cookies={
+                    "v_id": self.device_id,
+                },
+                headers={
+                    "user-agent": self.user_agent,
+                },
+            )
+        )
+        resp = requests.post(
+            "https://venmo.com/api/login",
+            json={
+                "username": self.username,
+                "password": self.password,
+                "isGroup": "false",
+            },
+            cookies={
+                "v_id": self.device_id,
+                "_csrf": csrf.cookie,
+            },
+            headers={
+                "csrf-token": csrf.token,
+                "xsrf-token": csrf.token,
+                "user-agent": self.user_agent,
+            },
+        )
+        if "OAuth2 Exception" in resp.text:
+            assert resp.request.url
+            return types.SimpleNamespace(
+                endpoint=resp.request.url,
+                status_code=resp.status_code,
+                error_message=resp.text,
+            )
+        assert (
+            resp.status_code == 201
+            or "Additional authentication is required" in resp.text
+        )
+        return None
