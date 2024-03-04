@@ -19,6 +19,8 @@ class TicketInfo:
     def format(self):
         return f"""
 
+Please read this email in its entirety before responding, as previous support agents have failed to do so and have incorrectly requested information that was already provided. Failure to read this email will result in it being repeated.
+
 The following legitimate login attempt using correct account credentials was blocked by Venmo systems:
 
 - Username: {self.username}
