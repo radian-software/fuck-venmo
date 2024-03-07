@@ -29,22 +29,23 @@ class Fastmail:
         self.api_token = api_token
 
     def _call(self, *calls: Query, force_multiple=False):
+        req = {
+            "using": [
+                "urn:ietf:params:jmap:core",
+                "urn:ietf:params:jmap:mail",
+                "urn:ietf:params:jmap:submission",
+            ],
+            "methodCalls": [
+                [call.route, {"accountId": self.user_id, **call.params}, call.name]
+                for call in calls
+            ],
+        }
         http_resp = requests.post(
             "https://api.fastmail.com/jmap/api/",
             headers={
                 "Authorization": f"Bearer {self.api_token}",
             },
-            json={
-                "using": [
-                    "urn:ietf:params:jmap:core",
-                    "urn:ietf:params:jmap:mail",
-                    "urn:ietf:params:jmap:submission",
-                ],
-                "methodCalls": [
-                    [call.route, {"accountId": self.user_id, **call.params}, call.name]
-                    for call in calls
-                ],
-            },
+            json=req,
         )
         try:
             http_resp.raise_for_status()
