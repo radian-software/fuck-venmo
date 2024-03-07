@@ -4,7 +4,6 @@ import random
 import time
 from typing import Any
 
-import bs4
 from html2text import html2text
 import requests
 from requests.models import HTTPError
