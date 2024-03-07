@@ -27,7 +27,7 @@ class Fastmail:
         self.user_id = user_id
         self.api_token = api_token
 
-    def _call(self, *calls: Query, force_multiple=False):
+    def _call(self, *calls: Query, force_multiple=False) -> Any:
         req = {
             "using": [
                 "urn:ietf:params:jmap:core",
@@ -162,10 +162,13 @@ class Fastmail:
         )
         (drafts_folder,) = drafts_folders["ids"]
         (sent_folder,) = sent_folders["ids"]
-        self._call(
+        identities = self._call(
             Query(
                 "Identity/get", {"filter": {"email": from_email}}, name="get_identity"
-            ),
+            )
+        )
+        identity_id = identities["list"][0]["id"]
+        self._call(
             Query(
                 "Email/set",
                 {
@@ -204,11 +207,7 @@ class Fastmail:
                 {
                     "create": {
                         "sent_id": {
-                            "#identityId": {
-                                "resultOf": "get_identity",
-                                "name": "Identity/get",
-                                "path": "/id",
-                            },
+                            "identityId": identity_id,
                             "emailId": "#draft_id",
                             "envelope": {
                                 "mailFrom": {
