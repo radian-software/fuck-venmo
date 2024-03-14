@@ -228,5 +228,5 @@ class VenmoClient:
     def get_replyto_id(self):
         last_reply = self.fastmail.search_emails(
             {"from": "venmo", "subject": "you have an update from venmo"}, limit=1
-        )
+        )[0]
         return last_reply["messageId"]
