@@ -24,6 +24,7 @@ v = VenmoClient(
 
 parser = argparse.ArgumentParser("fuck_venmo")
 parser.add_argument("-r", "--reset-password", action="store_true")
+parser.add_argument("-n", "--new-ticket", action="store_true")
 args = parser.parse_args()
 
 if args.reset_password:
@@ -41,6 +42,15 @@ with state_loaded() as state:
         state["venmo_password_reset"]["completed_end"]
     )
 
+date = datetime.now().strftime("%Y-%m-%d")
+
+if args.new_ticket:
+    replyto_id = ""
+    subject = f"Login attempt incorrectly blocked ({date})"
+else:
+    replyto_id = v.get_replyto_id()
+    subject = "Re: You have an update from Venmo"
+
 ticket_info = TicketInfo(
     username=v.username,
     email_address=v.email_address,
@@ -55,6 +65,8 @@ ticket_info = TicketInfo(
     last_recipient_time=txn_date,
 )
 
+print(subject)
+print()
 print(ticket_info.format())
 print()
 input("[Press enter to send email, or ^C to abort] ")
@@ -64,6 +76,7 @@ f.send_email(
     "radon@intuitiveexplanations.com",
     "Venmo",
     "support@venmo.com",
-    "Login attempt incorrectly blocked",
+    subject,
     ticket_info.format(),
+    replyto_id,
 )

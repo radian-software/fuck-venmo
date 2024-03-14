@@ -224,3 +224,9 @@ class VenmoClient:
             or "Additional authentication is required" in resp.text
         )
         return None
+
+    def get_replyto_id(self):
+        last_reply = self.fastmail.search_emails(
+            {"from": "venmo", "subject": "you have an update from venmo"}, limit=1
+        )
+        return last_reply["messageId"]

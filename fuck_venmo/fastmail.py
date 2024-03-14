@@ -60,7 +60,11 @@ class Fastmail:
                     raise JMAPError(
                         contents.pop("type") + ": " + repr(contents)
                     ) from None
-            for key in ("notUpdated",):
+            for key in (
+                "notCreated",
+                "notUpdated",
+                "notDestroyed",
+            ):
                 if bad := contents.get(key):
                     raise JMAPError(repr({key: bad}))
             responses.append(contents)
@@ -94,6 +98,7 @@ class Fastmail:
                     },
                     "properties": [
                         "id",
+                        "messageId",
                         "subject",
                         "sentAt",
                         "receivedAt",
@@ -123,6 +128,7 @@ class Fastmail:
             email["text"] = (
                 collected_content["textBody"] or collected_content["htmlBody"]
             )
+            email["messageId"] = email["messageId"][0]
         return emails["list"]
 
     def wait_for_email(self, filtering: dict, since: datetime, timeout: timedelta):
@@ -154,7 +160,7 @@ class Fastmail:
         to_email: str,
         subject: str,
         body_text: str,
-        reply_to_id: str = "",
+        replyto_id: str = "",
     ):
         drafts_folders, sent_folders = self._call(
             Query(
@@ -197,6 +203,11 @@ class Fastmail:
                             "bodyStructure": {
                                 "type": "text/plain",
                                 "partId": "body_id",
+                                **(
+                                    {"header:In-Reply-To:asMessageIds": [replyto_id]}
+                                    if replyto_id
+                                    else {}
+                                ),
                             },
                             "bodyValues": {
                                 "body_id": {"value": body_text, "isTruncated": False}
