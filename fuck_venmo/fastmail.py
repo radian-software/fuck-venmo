@@ -60,6 +60,9 @@ class Fastmail:
                     raise JMAPError(
                         contents.pop("type") + ": " + repr(contents)
                     ) from None
+            for key in ("notUpdated",):
+                if bad := contents.get(key):
+                    raise JMAPError(repr({key: bad}))
             responses.append(contents)
         if len(responses) == 1 and not force_multiple:
             return responses[0]
@@ -225,8 +228,8 @@ class Fastmail:
                     },
                     "onSuccessUpdateEmail": {
                         "#sent_id": {
-                            drafts_folder: None,
-                            sent_folder: True,
+                            f"mailboxIds/{drafts_folder}": None,
+                            f"mailboxIds/{sent_folder}": True,
                             "keywords/$draft": None,
                         }
                     },
