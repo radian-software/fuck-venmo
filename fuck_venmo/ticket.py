@@ -18,6 +18,8 @@ class TicketInfo:
     last_recipient_name: str
     last_recipient_amount: str
     last_recipient_time: datetime
+    driver_license_url: str
+    driver_license_selfie_url: str
 
     def format(self):
         return f"""
@@ -40,5 +42,7 @@ Additional information:
 
 - Account password has most recently been reset at {iso_format_but_not_fucked_up(self.last_password_reset)}
 - Most recent outgoing payment was to "{self.last_recipient_name}" for ${self.last_recipient_amount} on {self.last_recipient_time.strftime('%Y-%m-%d')}
+- Photograph of unexpired driver license is available at <{self.driver_license_url}>
+- Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
 
         """.strip()

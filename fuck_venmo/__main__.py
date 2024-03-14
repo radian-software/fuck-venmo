@@ -22,6 +22,9 @@ v = VenmoClient(
     f,
 )
 
+driver_license = os.environ["VENMO_DRIVER_LICENSE_URL"]
+driver_license_selfie = os.environ["VENMO_DRIVER_LICENSE_SELFIE_URL"]
+
 parser = argparse.ArgumentParser("fuck_venmo")
 parser.add_argument("-r", "--reset-password", action="store_true")
 parser.add_argument("-n", "--new-ticket", action="store_true")
@@ -63,6 +66,8 @@ ticket_info = TicketInfo(
     last_recipient_name=recipient,
     last_recipient_amount=amount,
     last_recipient_time=txn_date,
+    driver_license_url=driver_license,
+    driver_license_selfie_url=driver_license_selfie,
 )
 
 print(subject)
