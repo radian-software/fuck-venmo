@@ -15,6 +15,9 @@ class TicketInfo:
     status_code: int
     error_message: str
     last_password_reset: datetime
+    last_recipient_name: str
+    last_recipient_amount: str
+    last_recipient_time: datetime
 
     def format(self):
         return f"""
@@ -36,6 +39,6 @@ Please adjust your systems so that similar login attempts are not blocked.
 Additional information:
 
 - Account password has most recently been reset at {iso_format_but_not_fucked_up(self.last_password_reset)}
-- Most recent outgoing payment was to "Ingrid Tsang" for $32.56 on 2024-02-29
+- Most recent outgoing payment was to "{self.last_recipient_name}" for ${self.last_recipient_amount} on {self.last_recipient_time.strftime('%Y-%m-%d')}
 
         """.strip()

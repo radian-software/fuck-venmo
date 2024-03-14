@@ -155,6 +155,31 @@ class VenmoClient:
         self.fetch_password_reset_data()
         self.complete_password_reset()
 
+    def get_last_payment(self):
+        last_initiated = self.fastmail.search_emails(
+            {"from": "venmo", "subject": "you paid"}
+        )[0]
+        last_requested = self.fastmail.search_emails(
+            {"from": "venmo", "subject": "you completed charge request"}
+        )[0]
+        latest_email = max(
+            [last_initiated, last_requested], key=lambda email: email["sentAt"]
+        )
+        match = (
+            re.fullmatch(
+                r"You completed ([^']+)'s \$([0-9.]+) charge request",
+                latest_email["subject"],
+            )
+            or re.fullmatch(r"You paid ([^$]+) \$([0-9.]+)", latest_email["subject"])
+        )
+        assert match, latest_email["subject"]
+        recipient, amount = match.groups()
+        return (
+            recipient,
+            amount,
+            datetime.fromisoformat(latest_email["sentAt"].removesuffix("Z")),
+        )
+
     def is_login_blocked(self):
         requests.get(
             "https://venmo.com/account/sign-in", cookies={"v_id": self.device_id}

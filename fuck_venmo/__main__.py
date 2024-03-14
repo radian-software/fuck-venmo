@@ -34,6 +34,8 @@ if not block_info:
     print("Login is not currently blocked")
     sys.exit(0)
 
+recipient, amount, txn_date = v.get_last_payment()
+
 with state_loaded() as state:
     last_password_reset = datetime.fromtimestamp(
         state["venmo_password_reset"]["completed_end"]
@@ -48,6 +50,20 @@ ticket_info = TicketInfo(
     status_code=block_info.status_code,
     error_message=block_info.error_message,
     last_password_reset=last_password_reset,
+    last_recipient_name=recipient,
+    last_recipient_amount=amount,
+    last_recipient_time=txn_date,
 )
 
 print(ticket_info.format())
+print()
+input("[Press enter to send email, or ^C to abort] ")
+
+f.send_email(
+    "Radon Rosborough",
+    "radon@intuitiveexplanations.com",
+    "Venmo",
+    "support@venmo.com",
+    "Login attempt incorrectly blocked",
+    ticket_info.format(),
+)
