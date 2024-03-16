@@ -40,17 +40,17 @@ if args.use_vpn:
     atexit.register(lambda: proc.communicate(b"x\n"))
     start_time = datetime.now()
     while True:
-        with open("eddie.log") as f:
-            log_text = f.read()
+        with open("eddie.log") as log_file:
+            log_text = log_file.read()
             if "- Connected." in log_text:
                 break
-            time.sleep(1)
-            if proc.poll():
-                print(log_text)
-                raise RuntimeError("failed to start vpn")
-            if datetime.now() - start_time > timedelta(seconds=60):
-                print(log_text)
-                raise RuntimeError("timed out starting vpn")
+        time.sleep(1)
+        if proc.poll():
+            print(log_text)
+            raise RuntimeError("failed to start vpn")
+        if datetime.now() - start_time > timedelta(seconds=60):
+            print(log_text)
+            raise RuntimeError("timed out starting vpn")
 
 if args.reset_password:
     v.reset_password()
