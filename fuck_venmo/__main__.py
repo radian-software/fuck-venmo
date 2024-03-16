@@ -39,8 +39,12 @@ try:
 
     if args.use_vpn:
         log_file = open("eddie.log", "w")
-        proc = subprocess.Popen(["eddieup"], stdout=log_file, stdin=subprocess.PIPE)
-        atexit = lambda: proc.communicate(b"x\n", timeout=10)
+        proc = subprocess.Popen(
+            ["eddieup"],
+            stdout=log_file,
+            stdin=subprocess.PIPE,
+        )
+        atexit = lambda: subprocess.run(["eddieup", "kill"])
         start_time = datetime.now()
         while True:
             with open("eddie.log") as log_file:
