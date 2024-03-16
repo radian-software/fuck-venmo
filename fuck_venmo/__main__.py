@@ -13,7 +13,7 @@ from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
 from fuck_venmo.ticket import TicketInfo
 from fuck_venmo.venmo import VenmoClient
-from fuck_venmo.util import get_ipv4_address
+from fuck_venmo.util import get_ipv4_address, log
 
 atexit = lambda: None
 
@@ -38,6 +38,7 @@ try:
     args = parser.parse_args()
 
     if args.use_vpn:
+        log("start vpn connection")
         log_file = open("eddie.log", "w")
         proc = subprocess.Popen(
             ["eddieup"],
@@ -52,7 +53,7 @@ try:
                 if "- Connected." in log_text:
                     break
             time.sleep(1)
-            if proc.poll():
+            if proc.poll() is not None:
                 print(log_text)
                 raise RuntimeError("failed to start vpn")
             if datetime.now() - start_time > timedelta(seconds=60):

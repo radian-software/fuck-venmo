@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 import re
+import time
 import types
 import uuid
 
@@ -11,6 +12,11 @@ import requests
 
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
+from fuck_venmo.util import log
+
+
+class CaptchaException(Exception):
+    pass
 
 
 class VenmoClient:
@@ -46,7 +52,9 @@ class VenmoClient:
             r'<script id="__NEXT_DATA__" type="application/json">([^<>]+)</script>',
             resp.text,
         )
-        assert next_data_match
+        if not next_data_match:
+            assert "webcaptcha/ngrlCaptcha" in resp.text
+            raise CaptchaException
         return json.loads(next_data_match.group(1))
 
     def get_csrf_data(self, resp):
@@ -56,6 +64,7 @@ class VenmoClient:
         return types.SimpleNamespace(cookie=csrf_cookie, token=csrf_token)
 
     def trigger_password_reset(self):
+        log("trigger password reset")
         with state_loaded() as state:
             info = {"triggered_start": datetime.now().timestamp()}
             self.unauthenticated_graphql.execute(
@@ -76,6 +85,7 @@ class VenmoClient:
 
     def fetch_password_reset_data(self):
         with state_loaded() as state:
+            log("wait for password reset email")
             email = self.fastmail.wait_for_email(
                 {"from": "venmo", "subject": "password reset"},
                 since=datetime.fromtimestamp(
@@ -96,6 +106,7 @@ class VenmoClient:
             state["venmo_password_reset"]["reset_params"] = params
 
     def complete_password_reset(self):
+        log("complete password reset")
         with state_loaded() as state:
             params = state["venmo_password_reset"]["reset_params"]
             info = {
@@ -156,6 +167,7 @@ class VenmoClient:
         self.complete_password_reset()
 
     def get_last_payment(self):
+        log("get last payment info")
         last_initiated = self.fastmail.search_emails(
             {"from": "venmo", "subject": "you paid"}
         )[0]
@@ -181,20 +193,29 @@ class VenmoClient:
         )
 
     def is_login_blocked(self):
-        requests.get(
-            "https://venmo.com/account/sign-in", cookies={"v_id": self.device_id}
-        )
-        csrf = self.get_csrf_data(
-            requests.get(
-                "https://venmo.com/account/sign-in",
-                cookies={
-                    "v_id": self.device_id,
-                },
-                headers={
-                    "user-agent": self.user_agent,
-                },
-            )
-        )
+        start_time = datetime.now()
+        while True:
+            try:
+                log("get csrf data for login form")
+                csrf = self.get_csrf_data(
+                    requests.get(
+                        "https://venmo.com/account/sign-in",
+                        cookies={
+                            "v_id": self.device_id,
+                        },
+                        headers={
+                            "user-agent": self.user_agent,
+                        },
+                    )
+                )
+            except CaptchaException as e:
+                if datetime.now() - start_time > timedelta(seconds=60):
+                    raise RuntimeError("keep getting captcha, timed out") from e
+                time.sleep(1)
+                continue
+            else:
+                break
+        log("submit login request")
         resp = requests.post(
             "https://venmo.com/api/login",
             json={
@@ -226,6 +247,7 @@ class VenmoClient:
         return None
 
     def get_replyto_id(self):
+        log("get replyto id")
         last_reply = self.fastmail.search_emails(
             {"from": "venmo", "subject": "you have an update from venmo"}, limit=1
         )[0]

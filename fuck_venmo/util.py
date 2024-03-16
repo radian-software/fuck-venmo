@@ -1,6 +1,11 @@
 from datetime import datetime
+import sys
 
 import requests
+
+
+def log(msg: str):
+    print(f"fuck_venmo: {msg}", file=sys.stderr)
 
 
 def iso_format_but_not_fucked_up(dt: datetime):
