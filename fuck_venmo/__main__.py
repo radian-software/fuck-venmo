@@ -9,6 +9,8 @@ import subprocess
 import sys
 import time
 
+import requests
+
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
 from fuck_venmo.ticket import TicketInfo
@@ -17,7 +19,8 @@ from fuck_venmo.util import get_ipv4_address, log
 
 atexit = lambda: None
 
-try:
+def main():
+    global atexit
 
     f = Fastmail(os.environ["FASTMAIL_ACCOUNT_ID"], os.environ["FASTMAIL_API_TOKEN"])
     v = VenmoClient(
@@ -35,7 +38,39 @@ try:
     parser.add_argument("-r", "--reset-password", action="store_true")
     parser.add_argument("-n", "--new-ticket", action="store_true")
     parser.add_argument("-v", "--use-vpn", action="store_true")
+    parser.add_argument("-a", "--automatic", action="store_true")
+    parser.add_argument("-y", "--yes", action="store_true")
     args = parser.parse_args()
+
+    if args.automatic:
+
+        # This should not be hardcoded when in automatic mode
+        assert not args.new_ticket
+
+        inbound = v.get_last_inbound_message()
+        outbound = v.get_last_outbound_message()
+        now = datetime.now()
+
+        if inbound["ts"] > outbound["ts"]:
+            log("most recent email was inbound from venmo")
+            if "fuck-venmo" in inbound["labels"]:
+                log("most recent inbound email flagged for automatic response, proceeding")
+            else:
+                log("most recent inbound email not flagged for automatic response, aborting")
+                return
+        else:
+            log("most recent email was outbound from us")
+            if now - outbound["ts"] > timedelta(hours=24):
+                log("most recent email was sent more than 24 hours ago, proceeding")
+            else:
+                log("most recent email was sent less than 24 hours ago, aborting")
+                return
+
+        if now - inbound["ts"] > timedelta(days=5):
+            log("most recent inbound email was more than 5 days ago, will file a new ticket")
+            args.new_ticket = True
+        else:
+            log("most recent inbound email was less than 5 days ago, will not file a new ticket")
 
     if args.use_vpn:
         log("start vpn connection")
@@ -108,7 +143,10 @@ try:
     print()
     print(ticket_info.format())
     print()
-    input("[Press enter to send email, or ^C to abort] ")
+    if args.yes:
+        print("[Skipping confirmation due to --yes]")
+    else:
+        input("[Press enter to send email, or ^C to abort] ")
 
     f.send_email(
         "Radon Rosborough",
@@ -120,6 +158,12 @@ try:
         replyto_id,
     )
 
-finally:
+hc = os.environ["HEALTHCHECK_ENDPOINT"]
 
+try:
+    main()
+finally:
     atexit()
+
+log("report to healthcheck endpoint")
+requests.get(hc)

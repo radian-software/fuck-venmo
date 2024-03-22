@@ -45,6 +45,6 @@ Additional information:
 - Photograph of unexpired driver license is available at <{self.driver_license_url}>
 - Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
 
-Please note that tickets will continue to be filed until a response is received.
+To set your expectations, if a response is not received within 24 hours, a follow-up email will be sent. If a response is not received within 5 days, a new ticket will be filed. This process will repeat until login issues are resolved.
 
         """.strip()

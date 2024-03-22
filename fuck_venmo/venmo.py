@@ -15,7 +15,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
-from fuck_venmo.util import log
+from fuck_venmo.util import log, from_iso_format_but_not_fucked_up
 
 
 class CaptchaException(Exception):
@@ -192,7 +192,7 @@ class VenmoClient:
         return (
             recipient,
             amount,
-            datetime.fromisoformat(latest_email["sentAt"].removesuffix("Z")),
+            from_iso_format_but_not_fucked_up(latest_email["sentAt"]),
         )
 
     def is_login_blocked(self):
@@ -281,3 +281,21 @@ class VenmoClient:
             {"from": "venmo", "subject": "you have an update from venmo"}, limit=1
         )[0]
         return last_reply["messageId"]
+
+    def get_last_inbound_message(self):
+        log("get inbound message")
+        last_inbound = self.fastmail.search_emails(
+            {"from": "venmo", "subject": "you have an update from venmo"}, limit=1
+        )[0]
+        return {
+            "ts": from_iso_format_but_not_fucked_up(last_inbound["receivedAt"]),
+        }
+
+    def get_last_outbound_message(self):
+        log("get outbound message")
+        last_outbound = self.fastmail.search_emails(
+            {"from": self.email_address, "to": "venmo"}, limit=1
+        )[0]
+        return {
+            "ts": from_iso_format_but_not_fucked_up(last_outbound["receivedAt"]),
+        }
