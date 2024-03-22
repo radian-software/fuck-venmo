@@ -12,7 +12,7 @@ import time
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
 from fuck_venmo.ticket import TicketInfo
-from fuck_venmo.venmo import VenmoClient
+from fuck_venmo.venmo import CaptchaException, VenmoClient
 from fuck_venmo.util import get_ipv4_address, log
 
 atexit = lambda: None
@@ -63,7 +63,11 @@ try:
     if args.reset_password:
         v.reset_password()
 
-    block_info = v.is_login_blocked()
+    try:
+        block_info = v.is_login_blocked()
+    except CaptchaException:
+        block_info = v.is_login_blocked_selenium()
+
     if not block_info:
         print("Login is not currently blocked")
         sys.exit(0)

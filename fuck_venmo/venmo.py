@@ -9,6 +9,9 @@ import gql
 from gql import gql as GraphQLQuery
 from gql.transport.requests import RequestsHTTPTransport
 import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
@@ -209,7 +212,7 @@ class VenmoClient:
                     )
                 )
             except CaptchaException as e:
-                if datetime.now() - start_time > timedelta(seconds=60):
+                if datetime.now() - start_time > timedelta(seconds=15):
                     raise RuntimeError("keep getting captcha, timed out") from e
                 time.sleep(1)
                 continue
@@ -245,6 +248,32 @@ class VenmoClient:
             or "Additional authentication is required" in resp.text
         )
         return None
+
+    def is_login_blocked_selenium(self):
+        start_time = datetime.now()
+        log("instantiate headless browser")
+        options = FirefoxOptions()
+        options.add_argument("--headless")
+        browser = webdriver.Firefox(options=options)
+        log("load sign-in page")
+        browser.get("https://account.venmo.com/account/sign-in")
+        time.sleep(1)
+        log("submit username form")
+        browser.find_element(By.ID, "email").send_keys(self.username)
+        browser.find_element(By.ID, "btnNext").click()
+        time.sleep(1)
+        log("submit password form")
+        browser.find_element(By.ID, "password").send_keys(self.password)
+        browser.find_element(By.ID, "btnLogin").click()
+        time.sleep(5)
+        if browser.current_url == "https://account.venmo.com/":
+            return None
+        assert browser.current_url == "https://account.venmo.com/login-return-error", browser.current_url
+        return types.SimpleNamespace(
+            endpoint="https://account.venmo.com/account/sign-in",
+            status_code=307,
+            error_message=browser.find_element(By.CSS_SELECTOR, "h1").text.rstrip("."),
+        )
 
     def get_replyto_id(self):
         log("get replyto id")

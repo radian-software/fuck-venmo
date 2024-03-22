@@ -45,4 +45,6 @@ Additional information:
 - Photograph of unexpired driver license is available at <{self.driver_license_url}>
 - Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
 
+Please note that tickets will continue to be filed until a response is received.
+
         """.strip()
