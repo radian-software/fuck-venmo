@@ -218,5 +218,6 @@ try:
     main()
     log("report to healthcheck endpoint")
     requests.get(hc)
+    log("shutting down")
 finally:
     atexit()
