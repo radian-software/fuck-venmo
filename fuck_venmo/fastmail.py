@@ -72,6 +72,12 @@ class Fastmail:
             return responses[0]
         return responses
 
+    def get_mailbox_ids(self) -> str:
+        res = self._call(
+            Query("Mailbox/get", {})
+        )
+        return {mb["name"]: mb for mb in res["list"]}
+
     def search_emails(
         self,
         filtering: dict,
@@ -107,6 +113,7 @@ class Fastmail:
                         "textBody",
                         "htmlBody",
                         "bodyValues",
+                        "mailboxIds",
                     ],
                     "fetchTextBodyValues": True,
                     "fetchHTMLBodyValues": True,

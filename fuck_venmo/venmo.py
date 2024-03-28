@@ -1,21 +1,21 @@
 from datetime import datetime, timedelta
 import json
+from pathlib import Path
 import re
 import time
 import types
+from urllib.parse import parse_qs, urlparse
 import uuid
 
 import gql
 from gql import gql as GraphQLQuery
 from gql.transport.requests import RequestsHTTPTransport
 import requests
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
-from fuck_venmo.util import log, from_iso_format_but_not_fucked_up
+from fuck_venmo.util import from_iso_format_but_not_fucked_up, headless_browser, log
 
 
 class CaptchaException(Exception):
@@ -48,6 +48,8 @@ class VenmoClient:
             )
         )
         self.fastmail = fastmail
+        log("get mailbox labels")
+        self.fuck_venmo_label = fastmail.get_mailbox_ids()["fuck-venmo"]["id"]
 
     def get_next_data(self, resp):
         assert resp.status_code == 200, resp.status_code
@@ -213,7 +215,7 @@ class VenmoClient:
                 )
             except CaptchaException as e:
                 if datetime.now() - start_time > timedelta(seconds=15):
-                    raise RuntimeError("keep getting captcha, timed out") from e
+                    raise CaptchaException("keep getting captcha, timed out") from e
                 time.sleep(1)
                 continue
             else:
@@ -251,36 +253,51 @@ class VenmoClient:
 
     def is_login_blocked_selenium(self):
         start_time = datetime.now()
-        log("instantiate headless browser")
-        options = FirefoxOptions()
-        options.add_argument("--headless")
-        browser = webdriver.Firefox(options=options)
-        log("load sign-in page")
-        browser.get("https://account.venmo.com/account/sign-in")
-        time.sleep(1)
-        log("submit username form")
-        browser.find_element(By.ID, "email").send_keys(self.username)
-        browser.find_element(By.ID, "btnNext").click()
-        time.sleep(1)
-        log("submit password form")
-        browser.find_element(By.ID, "password").send_keys(self.password)
-        browser.find_element(By.ID, "btnLogin").click()
-        time.sleep(5)
-        if browser.current_url == "https://account.venmo.com/":
-            return None
-        assert browser.current_url == "https://account.venmo.com/login-return-error", browser.current_url
-        return types.SimpleNamespace(
-            endpoint="https://account.venmo.com/account/sign-in",
-            status_code=307,
-            error_message=browser.find_element(By.CSS_SELECTOR, "h1").text.rstrip("."),
-        )
+        log("instantiate headless browser for fallback login check")
+        with headless_browser() as browser:
+            log("load sign-in page")
+            browser.get("https://account.venmo.com/account/sign-in")
+            time.sleep(1)
+            log("submit username form")
+            browser.find_element(By.ID, "email").send_keys(self.username)
+            browser.find_element(By.ID, "btnNext").click()
+            time.sleep(1)
+            log("submit password form")
+            browser.find_element(By.ID, "password").send_keys(self.password)
+            browser.find_element(By.ID, "btnLogin").click()
+            time.sleep(5)
+            if browser.current_url == "https://account.venmo.com/":
+                return None
+            assert browser.current_url == "https://account.venmo.com/login-return-error", browser.current_url
+            return types.SimpleNamespace(
+                endpoint="https://account.venmo.com/account/sign-in",
+                status_code=307,
+                error_message=browser.find_element(By.CSS_SELECTOR, "h1").text.rstrip("."),
+            )
 
     def get_replyto_id(self):
         log("get replyto id")
-        last_reply = self.fastmail.search_emails(
+        last_inbound = self.fastmail.search_emails(
             {"from": "venmo", "subject": "you have an update from venmo"}, limit=1
         )[0]
-        return last_reply["messageId"]
+        last_outbound = self.fastmail.search_emails(
+            {"from": self.email_address, "to": "venmo"}, limit=1
+        )[0]
+        return max([last_inbound, last_outbound], key=lambda em: em["receivedAt"])["messageId"]
+
+    def get_last_new_ticket(self):
+        log("get last new ticket email")
+        last = self.fastmail.search_emails(
+            {
+                "from": self.email_address,
+                "to": "venmo",
+                "subject": "Login attempt incorrectly blocked",
+            },
+            limit=1,
+        )[0]
+        return {
+            "ts": from_iso_format_but_not_fucked_up(last["receivedAt"]),
+        }
 
     def get_last_inbound_message(self):
         log("get inbound message")
@@ -289,13 +306,68 @@ class VenmoClient:
         )[0]
         return {
             "ts": from_iso_format_but_not_fucked_up(last_inbound["receivedAt"]),
+            "should_autoreply": self.fuck_venmo_label in last_inbound["mailboxIds"],
         }
 
     def get_last_outbound_message(self):
         log("get outbound message")
-        last_outbound = self.fastmail.search_emails(
-            {"from": self.email_address, "to": "venmo"}, limit=1
-        )[0]
+        outbounds = self.fastmail.search_emails(
+            {"from": self.email_address, "to": "venmo"}, limit=10
+        )
         return {
-            "ts": from_iso_format_but_not_fucked_up(last_outbound["receivedAt"]),
+            "ts": from_iso_format_but_not_fucked_up(outbounds[0]["receivedAt"]),
+            "prev_ts": [
+                from_iso_format_but_not_fucked_up(email["receivedAt"]) for email in outbounds
+            ],
         }
+
+    def get_last_document_form(self) -> str:
+        log("get last document form")
+        last = self.fastmail.search_emails(
+            {"from": "venmo", "text": "ticket_form_id=360001521814"}, limit=1
+        )[0]
+        form = re.search(r"https://help.venmo.com/[a-z0-9?&=/_-]+", last["text"])
+        return {
+            "ts": from_iso_format_but_not_fucked_up(last["receivedAt"]),
+            "url": form.group(0),
+        }
+
+    def submit_documents(self, form_url: str, document_filepaths: list[Path]):
+        proc_start_time = datetime.now()
+        tid = parse_qs(urlparse(form_url).query)["tid"]
+        log("instantiate headless browser for document submission")
+        with headless_browser() as browser:
+            log("loading zendesk document submission form")
+            browser.get(form_url)
+            time.sleep(1)
+            log("filling zendesk document submission form")
+            browser.find_element(By.ID, "request_anonymous_requester_email").send_keys(self.email_address)
+            browser.find_element(By.ID, "request_description").send_keys("All applicable identity documents")
+            for p in document_filepaths:
+                browser.find_element(By.ID, "request-attachments").send_keys(str(p))
+            log("waiting for documents to upload")
+            start_time = datetime.now()
+            while True:
+                try:
+                    elts = browser.find_elements(By.CSS_SELECTOR, "span.upload-remove")
+                    assert len(elts) >= len(document_filepaths)
+                    for elt in elts:
+                        assert elt.is_displayed()
+                except Exception:
+                    pass
+                else:
+                    break
+                time.sleep(1)
+                if datetime.now() - start_time > timedelta(seconds=60):
+                    raise RuntimeError("timed out waiting for documents to upload")
+            log("submitting documents form")
+            browser.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
+            time.sleep(5)
+            assert "Your request was successfully submitted" in browser.page_source
+            with state_loaded() as state:
+                state["zendesk_document_submission"] = {
+                    "completed_start": proc_start_time.timestamp(),
+                    "completed_end": datetime.now().timestamp(),
+                    "ticket_id": tid,
+                    "form_url": form_url,
+                }
