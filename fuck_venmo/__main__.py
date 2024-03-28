@@ -216,8 +216,7 @@ hc = os.environ["HEALTHCHECK_ENDPOINT"]
 
 try:
     main()
+    log("report to healthcheck endpoint")
+    requests.get(hc)
 finally:
     atexit()
-
-log("report to healthcheck endpoint")
-requests.get(hc)
