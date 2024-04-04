@@ -16,9 +16,12 @@ class TicketInfo:
     status_code: int
     error_message: str
     last_password_reset: datetime
-    last_recipient_name: str
-    last_recipient_amount: str
-    last_recipient_time: datetime
+    last_payee_name: str
+    last_payee_amount: str
+    last_payee_time: datetime
+    last_payer_name: str
+    last_payer_amount: str
+    last_payer_time: datetime
     driver_license_url: str
     driver_license_selfie_url: str
     document_form_requested_time: datetime
@@ -47,7 +50,8 @@ Please adjust your systems so that similar login attempts are not blocked.
 Additional information:
 
 - Account password has most recently been reset at {iso_format_but_not_fucked_up(self.last_password_reset)}
-- Most recent outgoing payment was to "{self.last_recipient_name}" for ${self.last_recipient_amount} on {self.last_recipient_time.strftime('%Y-%m-%d')}
+- Most recent outgoing payment was to "{self.last_payee_name}" for ${self.last_payee_amount} on {self.last_payee_time.strftime('%Y-%m-%d')}
+- Most recent incoming payment was from "{self.last_payer_name}" for ${self.last_payer_amount} on {self.last_payer_time.strftime('%Y-%m-%d')}
 - Photograph of unexpired driver license is available at <{self.driver_license_url}>
 - Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
 - The aforementioned identity documents were also uploaded at <{self.document_form_url}> most recently at {iso_format_but_not_fucked_up(self.document_form_completed_time)} as requested at {iso_format_but_not_fucked_up(self.document_form_requested_time)}

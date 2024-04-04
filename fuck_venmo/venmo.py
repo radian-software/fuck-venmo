@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 import json
 from pathlib import Path
@@ -20,6 +21,13 @@ from fuck_venmo.util import from_iso_format_but_not_fucked_up, headless_browser,
 
 class CaptchaException(Exception):
     pass
+
+
+@dataclass
+class Payment:
+    person: str
+    amount: str
+    timestamp: datetime
 
 
 class VenmoClient:
@@ -171,8 +179,8 @@ class VenmoClient:
         self.fetch_password_reset_data()
         self.complete_password_reset()
 
-    def get_last_payment(self):
-        log("get last payment info")
+    def get_last_outbound_payment(self):
+        log("get last outbound payment info")
         last_initiated = self.fastmail.search_emails(
             {"from": "venmo", "subject": "you paid"}
         )[0]
@@ -191,7 +199,33 @@ class VenmoClient:
         )
         assert match, latest_email["subject"]
         recipient, amount = match.groups()
-        return (
+        return Payment(
+            recipient,
+            amount,
+            from_iso_format_but_not_fucked_up(latest_email["sentAt"]),
+        )
+
+    def get_last_inbound_payment(self):
+        log("get last inbound payment info")
+        last_requested = self.fastmail.search_emails(
+            {"from": "venmo", "subject": "paid your"}
+        )[0]
+        last_initiated = self.fastmail.search_emails(
+            {"from": "venmo", "subject": "paid you"}
+        )[0]
+        latest_email = max(
+            [last_requested, last_initiated], key=lambda email: email["sentAt"]
+        )
+        match = (
+            re.fullmatch(
+                r"([^']+) paid you \$([0-9.]+)",
+                latest_email["subject"],
+            )
+            or re.fullmatch(r"([^$]+) paid your \$([0-9.]+) request", latest_email["subject"])
+        )
+        assert match, latest_email["subject"]
+        recipient, amount = match.groups()
+        return Payment(
             recipient,
             amount,
             from_iso_format_but_not_fucked_up(latest_email["sentAt"]),
