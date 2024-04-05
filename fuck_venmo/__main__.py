@@ -134,8 +134,7 @@ def main():
         print("Login is not currently blocked")
         sys.exit(0)
 
-    outbound_payment = v.get_last_outbound_payment()
-    inbound_payment = v.get_last_inbound_payment()
+    txn_ledger = v.get_transaction_ledger(datetime.now() - timedelta(days=90))
 
     with state_loaded() as state:
         last_password_reset = datetime.fromtimestamp(
@@ -184,12 +183,7 @@ def main():
         status_code=block_info.status_code,
         error_message=block_info.error_message,
         last_password_reset=last_password_reset,
-        last_payee_name=outbound_payment.person,
-        last_payee_amount=outbound_payment.amount,
-        last_payee_time=outbound_payment.timestamp,
-        last_payer_name=inbound_payment.person,
-        last_payer_amount=inbound_payment.amount,
-        last_payer_time=inbound_payment.timestamp,
+        transaction_ledger=txn_ledger,
         driver_license_url=driver_license,
         driver_license_selfie_url=driver_license_selfie,
         document_form_requested_time=last_form["ts"],

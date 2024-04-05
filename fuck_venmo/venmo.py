@@ -16,7 +16,12 @@ from selenium.webdriver.common.by import By
 
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
-from fuck_venmo.util import from_iso_format_but_not_fucked_up, headless_browser, log
+from fuck_venmo.util import (
+    from_iso_format_but_not_fucked_up,
+    headless_browser,
+    iso_format_but_not_fucked_up,
+    log,
+)
 
 
 class CaptchaException(Exception):
@@ -28,6 +33,11 @@ class Payment:
     person: str
     amount: str
     timestamp: datetime
+    outbound: bool
+
+    @property
+    def inbound(self):
+        return not self.outbound
 
 
 class VenmoClient:
@@ -179,57 +189,48 @@ class VenmoClient:
         self.fetch_password_reset_data()
         self.complete_password_reset()
 
-    def get_last_outbound_payment(self):
-        log("get last outbound payment info")
-        last_initiated = self.fastmail.search_emails(
-            {"from": "venmo", "subject": "you paid"}
-        )[0]
-        last_requested = self.fastmail.search_emails(
-            {"from": "venmo", "subject": "you completed charge request"}
-        )[0]
-        latest_email = max(
-            [last_initiated, last_requested], key=lambda email: email["sentAt"]
-        )
-        match = (
-            re.fullmatch(
-                r"You completed ([^']+)'s \$([0-9.]+) charge request",
-                latest_email["subject"],
-            )
-            or re.fullmatch(r"You paid ([^$]+) \$([0-9.]+)", latest_email["subject"])
-        )
-        assert match, latest_email["subject"]
-        recipient, amount = match.groups()
-        return Payment(
-            recipient,
-            amount,
-            from_iso_format_but_not_fucked_up(latest_email["sentAt"]),
-        )
-
-    def get_last_inbound_payment(self):
-        log("get last inbound payment info")
-        last_requested = self.fastmail.search_emails(
-            {"from": "venmo", "subject": "paid your"}
-        )[0]
-        last_initiated = self.fastmail.search_emails(
-            {"from": "venmo", "subject": "paid you"}
-        )[0]
-        latest_email = max(
-            [last_requested, last_initiated], key=lambda email: email["sentAt"]
-        )
-        match = (
-            re.fullmatch(
-                r"([^']+) paid you \$([0-9.]+)",
-                latest_email["subject"],
-            )
-            or re.fullmatch(r"([^$]+) paid your \$([0-9.]+) request", latest_email["subject"])
-        )
-        assert match, latest_email["subject"]
-        recipient, amount = match.groups()
-        return Payment(
-            recipient,
-            amount,
-            from_iso_format_but_not_fucked_up(latest_email["sentAt"]),
-        )
+    def get_transaction_ledger(self, since: datetime) -> list[Payment]:
+        log("get transaction ledger")
+        email_types = [
+            {
+                "subject": "you paid",
+                "regex": r"You paid ([^$]+) \$([0-9.]+)",
+                "outbound": True,
+            },
+            {
+                "subject": "you completed charge request",
+                "regex": r"You completed ([^']+)'s \$([0-9.]+) charge request",
+                "outbound": True,
+            },
+            {
+                "subject": "paid you",
+                "regex": r"([^']+) paid you \$([0-9.]+)",
+                "outbound": False,
+            },
+            {
+                "subject": "paid your",
+                "regex": r"([^$]+) paid your \$([0-9.]+) request",
+                "outbound": False,
+            }
+        ]
+        txns = []
+        for email_type in email_types:
+            for email in self.fastmail.search_emails({
+                    "from": "venmo",
+                    "subject": email_type["subject"],
+                    "after": iso_format_but_not_fucked_up(since),
+            }, limit=1000):
+                match = re.fullmatch(email_type["regex"], email["subject"])
+                assert match, email["subject"] + " did not match " + email_type["regex"]
+                recipient, amount = match.groups()
+                txns.append(Payment(
+                    person=recipient,
+                    amount=amount,
+                    timestamp=from_iso_format_but_not_fucked_up(email["sentAt"]),
+                    outbound=email_type["outbound"],
+                ))
+        txns.sort(key=lambda txn: txn.timestamp)
+        return txns
 
     def is_login_blocked(self):
         start_time = datetime.now()

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from fuck_venmo.venmo import Payment
 from fuck_venmo.util import iso_format_but_not_fucked_up
 
 
@@ -16,12 +17,7 @@ class TicketInfo:
     status_code: int
     error_message: str
     last_password_reset: datetime
-    last_payee_name: str
-    last_payee_amount: str
-    last_payee_time: datetime
-    last_payer_name: str
-    last_payer_amount: str
-    last_payer_time: datetime
+    transaction_ledger: list[Payment]
     driver_license_url: str
     driver_license_selfie_url: str
     document_form_requested_time: datetime
@@ -29,6 +25,7 @@ class TicketInfo:
     document_form_url: str
 
     def format(self):
+        ledger = "\n".join(f"- ${txn.amount} " + ("sent to" if txn.outbound else "received from") + f" {txn.person} at {iso_format_but_not_fucked_up(txn.timestamp)}" for txn in reversed(self.transaction_ledger))
         return f"""
 
 {self.preface}
@@ -45,16 +42,18 @@ The following legitimate login attempt using correct account credentials was blo
 - Status code: {self.status_code}
 - Error message: {self.error_message}
 
-Please adjust your systems so that similar login attempts are not blocked.
+Please adjust your systems so that similar login attempts are not blocked. Note that it is irrelevant whether other login attempts have succeeded. Please correct the issue that resulted in the specific login attempt above being blocked.
 
 Additional information:
 
 - Account password has most recently been reset at {iso_format_but_not_fucked_up(self.last_password_reset)}
-- Most recent outgoing payment was to "{self.last_payee_name}" for ${self.last_payee_amount} on {self.last_payee_time.strftime('%Y-%m-%d')}
-- Most recent incoming payment was from "{self.last_payer_name}" for ${self.last_payer_amount} on {self.last_payer_time.strftime('%Y-%m-%d')}
 - Photograph of unexpired driver license is available at <{self.driver_license_url}>
 - Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
 - The aforementioned identity documents were also uploaded at <{self.document_form_url}> most recently at {iso_format_but_not_fucked_up(self.document_form_completed_time)} as requested at {iso_format_but_not_fucked_up(self.document_form_requested_time)}
+
+For verification purposes, the following is a list of all Venmo transactions on the account from the last 3 months, in reverse chronological order:
+
+{ledger}
 
         """.strip()
 
