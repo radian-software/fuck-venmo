@@ -44,6 +44,8 @@ The following legitimate login attempt using correct account credentials was blo
 
 Please adjust your systems so that similar login attempts are not blocked. Note that it is irrelevant whether other login attempts have succeeded. Please correct the issue that resulted in the specific login attempt above being blocked.
 
+Please note that there is no issue with the network being used for login, nor is there any issue with the device being used, nor the method of accessing Venmo from that device. Any requests for changes to these parameters will be ignored unless a specific reason is provided.
+
 Additional information:
 
 - Account password has most recently been reset at {iso_format_but_not_fucked_up(self.last_password_reset)}
