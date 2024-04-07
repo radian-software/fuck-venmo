@@ -217,7 +217,7 @@ class VenmoClient:
         for email_type in email_types:
             for email in self.fastmail.search_emails({
                     "from": "venmo",
-                    "subject": email_type["subject"],
+                    "subject": '"' +email_type["subject"] + '"',
                     "after": iso_format_but_not_fucked_up(since),
             }, limit=1000):
                 match = re.fullmatch(email_type["regex"], email["subject"])
