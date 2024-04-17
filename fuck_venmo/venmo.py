@@ -40,6 +40,23 @@ class Payment:
         return not self.outbound
 
 
+@dataclass
+class BannedPhrase:
+    phrase: str
+    reason: str
+
+    def get_message(self):
+        return f'Your prior email used the phrase "{self.phrase}", which is not allowed. {self.reason} As a result, your prior email has been discarded without being read, and the request has been restated. Please try again.'
+
+
+BANNED_PHRASES = [
+    BannedPhrase(
+        phrase="the error message is almost certainly an issue with either your ISP/cellular network",
+        reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."'
+    )
+]
+
+
 class VenmoClient:
     def __init__(
         self,
@@ -334,6 +351,13 @@ class VenmoClient:
             "ts": from_iso_format_but_not_fucked_up(last["receivedAt"]),
         }
 
+    def find_banned_phrases(self, email_text) -> [BannedPhrase]:
+        found = []
+        for phrase in BANNED_PHRASES:
+            if phrase.phrase in email_text:
+                found.append(phrase)
+        return found
+
     def get_last_inbound_message(self):
         log("get inbound message")
         last_inbound = self.fastmail.search_emails(
@@ -342,6 +366,7 @@ class VenmoClient:
         return {
             "ts": from_iso_format_but_not_fucked_up(last_inbound["receivedAt"]),
             "should_autoreply": self.fuck_venmo_label in last_inbound["mailboxIds"],
+            "banned_phrases": self.find_banned_phrases(last_inbound["text"])
         }
 
     def get_last_outbound_message(self):

@@ -49,6 +49,8 @@ def main():
     parser.add_argument("-y", "--yes", action="store_true")
     args = parser.parse_args()
 
+    banned_phrases = []
+
     if args.automatic:
 
         # This should not be hardcoded when in automatic mode
@@ -59,16 +61,18 @@ def main():
         last_new = v.get_last_new_ticket()
         now = datetime.now()
 
+        banned_phrases = inbound["banned_phrases"]
+
         # Lookup the last email that Venmo sent us, go forward in time
         # to the next email that we sent them (in response to that
         # email they sent us), and save that timestamp. This is the
         # timestamp we want to use as reference to see if they have
         # been ignoring us for too long: we want them to respond
-        # within 5 days of the first time we mailed them in response
+        # within 4 days of the first time we mailed them in response
         # to their previous message.
         #
         # We also want to count us filing a new ticket the same as
-        # them replying, in that we should wait again 5 days before
+        # them replying, in that we should wait again 4 days before
         # filing yet another ticket. To avoid falling into a loop of
         # new tickets.
         ts_ignored = [ts for ts in outbound["prev_ts"] if ts > max(inbound["ts"], last_new["ts"])]
@@ -80,6 +84,8 @@ def main():
             log("most recent email was inbound from venmo")
             if inbound["should_autoreply"]:
                 log("most recent inbound email flagged for automatic response, proceeding")
+            elif inbound["banned_phrases"]:
+                log("most recent inbound email uses banned phrases, proceeding unconditionally")
             else:
                 log("most recent inbound email not flagged for automatic response, aborting")
                 return
@@ -91,11 +97,11 @@ def main():
                 log("most recent email was sent less than 24 hours ago, aborting")
                 return
 
-        if oldest_ignored_ts and (now - oldest_ignored_ts > timedelta(days=5)):
-            log("outbound emails have been ignored for more than 5 days, will file a new ticket")
+        if oldest_ignored_ts and (now - oldest_ignored_ts > timedelta(days=4)):
+            log("outbound emails have been ignored for more than 4 days, will file a new ticket")
             args.new_ticket = True
         elif oldest_ignored_ts:
-            log("outbound emails have been ignored for less than 5 days, will not file a new ticket")
+            log("outbound emails have been ignored for less than 4 days, will not file a new ticket")
         else:
             log("no outbound emails have been ignored yet, will not file a new ticket")
 
@@ -167,11 +173,11 @@ def main():
     if args.new_ticket:
         replyto_id = ""
         subject = f"Login attempt incorrectly blocked ({date})"
-        preface = "A new ticket has been filed since the prior ticket went ignored for more than 5 days."
+        preface = "A new ticket has been filed since the prior ticket went ignored for more than 4 days."
     else:
         replyto_id = v.get_replyto_id()
         subject = "Re: You have an update from Venmo"
-        preface = ""
+        preface = "\n\n".join(phrase.get_message() for phrase in banned_phrases)
 
     ticket_info = TicketInfo(
         preface=preface,
