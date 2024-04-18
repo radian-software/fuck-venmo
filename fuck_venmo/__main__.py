@@ -179,6 +179,8 @@ def main():
         subject = "Re: You have an update from Venmo"
         preface = "\n\n".join(phrase.get_message() for phrase in banned_phrases)
 
+    num_outbound = venmo.count_outbound_emails()
+
     ticket_info = TicketInfo(
         preface=preface,
         username=v.username,
@@ -195,6 +197,7 @@ def main():
         document_form_requested_time=last_form["ts"],
         document_form_completed_time=last_submission_ts,
         document_form_url=last_form["url"],
+        num_outbound=num_outbound,
     )
 
     print(subject)

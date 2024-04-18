@@ -244,7 +244,7 @@ class VenmoClient:
                     "from": "venmo",
                     "subject": '"' +email_type["subject"] + '"',
                     "after": iso_format_but_not_fucked_up(since),
-            }, limit=1000):
+            }, limit=None):
                 match = re.fullmatch(email_type["regex"], email["subject"])
                 assert match, email["subject"] + " did not match " + email_type["regex"]
                 recipient, amount = match.groups()
@@ -439,3 +439,12 @@ class VenmoClient:
                     "ticket_id": tid,
                     "form_url": form_url,
                 }
+
+    def count_outbound_emails(self):
+        return len(self.fastmail.search_emails(
+            {
+                "from": self.email_address,
+                "to": "venmo",
+                "text": "The following legitimate login attempt using correct account credentials was blocked by Venmo systems",
+            }, limit=None,
+        ))

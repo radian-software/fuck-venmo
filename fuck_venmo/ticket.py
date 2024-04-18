@@ -23,9 +23,10 @@ class TicketInfo:
     document_form_requested_time: datetime
     document_form_completed_time: datetime
     document_form_url: str
+    num_outbound: int
 
     def format(self):
-        ledger = "\n".join(f"- ${txn.amount} " + ("sent to" if txn.outbound else "received from") + f" {txn.person} at {iso_format_but_not_fucked_up(txn.timestamp)}" for txn in reversed(self.transaction_ledger))
+        ledger = "\n".join(f"- ${txn.amount} " + ("sent to" if txn.outbound else "received from") + f" {txn.person} at {iso_format_but_not_fucked_up(txn.timestamp)}" for txn in reversed(self.transaction_ledger)) or "(no transactions)"
         return f"""
 
 {self.preface}
@@ -56,6 +57,8 @@ Additional information:
 For verification purposes, the following is a list of all Venmo transactions on the account from the last 3 months, in reverse chronological order:
 
 {ledger}
+
+Please note that you have received {self.num_outbound} prior emails about this specific issue, but have not resolved it.
 
         """.strip()
 

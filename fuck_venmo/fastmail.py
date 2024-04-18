@@ -82,7 +82,7 @@ class Fastmail:
         self,
         filtering: dict,
         sorting: list[dict] = [{"property": "receivedAt", "isAscending": False}],
-        limit: int = 10,
+        limit: int | None = 10,
     ):
         _, emails = self._call(
             Query(
@@ -90,7 +90,7 @@ class Fastmail:
                 {
                     "filter": filtering,
                     "sort": sorting,
-                    "limit": limit,
+                    **({"limit": limit} if limit else {}),
                 },
                 name="get_ids",
             ),
