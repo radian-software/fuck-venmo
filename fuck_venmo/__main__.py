@@ -143,7 +143,7 @@ def main():
 
     if not block_info:
         print("Login is not currently blocked")
-        sys.exit(0)
+        return
 
     txn_ledger = v.get_transaction_ledger(datetime.now() - timedelta(days=90))
 
@@ -184,7 +184,7 @@ def main():
         subject = "Re: You have an update from Venmo"
         preface = "\n\n".join(phrase.get_message() for phrase in banned_phrases)
 
-    num_outbound = venmo.count_outbound_emails()
+    num_outbound = v.count_outbound_emails()
 
     ticket_info = TicketInfo(
         preface=preface,
