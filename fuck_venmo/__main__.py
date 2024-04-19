@@ -12,6 +12,7 @@ import time
 
 import requests
 
+from fuck_venmo.airvpn import AirVPN
 from fuck_venmo.fastmail import Fastmail
 from fuck_venmo.state import state_loaded
 from fuck_venmo.ticket import TicketInfo
@@ -31,6 +32,7 @@ def main():
         os.environ["VENMO_BANK_ACCOUNT_NUMBER"],
         f,
     )
+    a = AirVPN(os.environ["AIRVPN_API_KEY"])
 
     driver_license = os.environ["VENMO_DRIVER_LICENSE_URL"]
     driver_license_selfie = os.environ["VENMO_DRIVER_LICENSE_SELFIE_URL"]
@@ -106,10 +108,12 @@ def main():
             log("no outbound emails have been ignored yet, will not file a new ticket")
 
     if args.use_vpn:
-        log("start vpn connection")
+        log("pick random vpn server")
+        server = a.get_random_server()
+        log(f"start vpn connection via server {server}")
         log_file = open("eddie.log", "w")
         proc = subprocess.Popen(
-            ["eddieup"],
+            ["eddieup", server],
             stdout=log_file,
             stdin=subprocess.PIPE,
         )
@@ -134,6 +138,7 @@ def main():
     try:
         block_info = v.is_login_blocked()
     except CaptchaException:
+        log("normal login is blocked, falling back to selenium")
         block_info = v.is_login_blocked_selenium()
 
     if not block_info:

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import os
 from pathlib import Path
 
+from fuck_venmo.airvpn import AirVPN
 from fuck_venmo.fastmail import Fastmail, Query
 from fuck_venmo.util import iso_format_but_not_fucked_up
 from fuck_venmo.venmo import VenmoClient
@@ -23,3 +24,4 @@ v = VenmoClient(
     os.environ["VENMO_BANK_ACCOUNT_NUMBER"],
     f,
 )
+a = AirVPN(os.environ["AIRVPN_API_KEY"])

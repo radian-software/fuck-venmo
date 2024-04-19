@@ -328,6 +328,8 @@ class VenmoClient:
             time.sleep(5)
             if browser.current_url == "https://account.venmo.com/":
                 return None
+            if browser.current_url.startswith("https://account.venmo.com/account/mfa/code-prompt?k="):
+                return None
             assert browser.current_url == "https://account.venmo.com/login-return-error", browser.current_url
             return types.SimpleNamespace(
                 endpoint="https://account.venmo.com/account/sign-in",
