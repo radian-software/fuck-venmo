@@ -51,7 +51,7 @@ def main():
     parser.add_argument("-y", "--yes", action="store_true")
     args = parser.parse_args()
 
-    banned_phrases = []
+    special_phrases = []
 
     if args.automatic:
 
@@ -63,7 +63,7 @@ def main():
         last_new = v.get_last_new_ticket()
         now = datetime.now()
 
-        banned_phrases = inbound["banned_phrases"]
+        special_phrases = inbound["special_phrases"]
 
         # Lookup the last email that Venmo sent us, go forward in time
         # to the next email that we sent them (in response to that
@@ -86,8 +86,8 @@ def main():
             log("most recent email was inbound from venmo")
             if inbound["should_autoreply"]:
                 log("most recent inbound email flagged for automatic response, proceeding")
-            elif inbound["banned_phrases"]:
-                log("most recent inbound email uses banned phrases, proceeding unconditionally")
+            elif any(p.triggers_autoresponse for p in special_phrases):
+                log("most recent inbound email uses phrases that trigger autoresponse, proceeding unconditionally")
             else:
                 log("most recent inbound email not flagged for automatic response, aborting")
                 return
@@ -182,7 +182,7 @@ def main():
     else:
         replyto_id = v.get_replyto_id()
         subject = "Re: You have an update from Venmo"
-        preface = "\n\n".join(phrase.get_message() for phrase in banned_phrases)
+        preface = "\n\n".join(phrase.get_message() for phrase in special_phrases)
 
     num_outbound = v.count_outbound_emails()
 

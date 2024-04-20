@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import json
@@ -40,16 +41,42 @@ class Payment:
         return not self.outbound
 
 
+class SpecialPhrase(ABC):
+    @abstractmethod
+    def get_message(self) -> str:
+        raise NotImplemented
+
+    @property
+    def triggers_autoresponse(self) -> bool:
+        return False
+
+
 @dataclass
-class BannedPhrase:
+class BannedPhrase(SpecialPhrase):
     phrase: str
     reason: str
 
     def get_message(self):
         return f'Your prior email used the phrase "{self.phrase}", which is not allowed. {self.reason} As a result, your prior email has been discarded without being read, and the request has been restated. Please try again.'
 
+    @property
+    def triggers_autoresponse(self):
+        return True
 
-BANNED_PHRASES = [
+
+@dataclass
+class DoesItWorkNow(SpecialPhrase):
+    phrase: str
+
+    def get_message(self):
+        return f'Your prior email used the phrase "{self.phrase}", which suggests you think that the problem is resolved. Please be advised that if you are receiving this email, then the problem is not resolved, and your prior email has been discarded without being read. Refer to the details below for updated timestamps, and please try again.'
+
+    @property
+    def triggers_autoresponse(self):
+        return True
+
+
+SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="the error message is almost certainly an issue with either your ISP/cellular network",
         reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."'
@@ -61,6 +88,12 @@ BANNED_PHRASES = [
     BannedPhrase(
         phrase="can you please confirm the dollar amount",
         reason="The use of this phrase indicates that you did not read the preceding email, which provides a complete listing of all recent transactions on the account along with their dollar amounts.",
+    ),
+    DoesItWorkNow(
+        phrase="let us know if you are able to login",
+    ),
+    DoesItWorkNow(
+        phrase="you should be able to login",
     ),
 ]
 
@@ -361,10 +394,11 @@ class VenmoClient:
             "ts": from_iso_format_but_not_fucked_up(last["receivedAt"]),
         }
 
-    def find_banned_phrases(self, email_text) -> [BannedPhrase]:
+    def find_special_phrases(self, email_text) -> [SpecialPhrase]:
         found = []
-        for phrase in BANNED_PHRASES:
-            if phrase.phrase in email_text:
+        text = email_text.lower()
+        for phrase in SPECIAL_PHRASES:
+            if phrase.phrase.lower() in text:
                 found.append(phrase)
         return found
 
@@ -376,7 +410,7 @@ class VenmoClient:
         return {
             "ts": from_iso_format_but_not_fucked_up(last_inbound["receivedAt"]),
             "should_autoreply": self.fuck_venmo_label in last_inbound["mailboxIds"],
-            "banned_phrases": self.find_banned_phrases(last_inbound["text"])
+            "special_phrases": self.find_special_phrases(last_inbound["text"])
         }
 
     def get_last_outbound_message(self):
