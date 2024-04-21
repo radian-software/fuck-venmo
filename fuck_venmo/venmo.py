@@ -95,6 +95,9 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="you should be able to login",
     ),
+    DoesItWorkNow(
+        phrase="it seems that you were able to successfully log in",
+    ),
 ]
 
 
