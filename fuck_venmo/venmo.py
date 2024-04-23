@@ -79,7 +79,11 @@ class DoesItWorkNow(SpecialPhrase):
 SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="the error message is almost certainly an issue with either your ISP/cellular network",
-        reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."'
+        reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."',
+    ),
+    BannedPhrase(
+        phrase="recommend doing the process in the meantime using the Venmo app and not through a computer",
+        reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."',
     ),
     BannedPhrase(
         phrase="we need you to first reset your password",
@@ -91,6 +95,9 @@ SPECIAL_PHRASES = [
     ),
     DoesItWorkNow(
         phrase="let us know if you are able to login",
+    ),
+    DoesItWorkNow(
+        phrase="let me know if you are able to login",
     ),
     DoesItWorkNow(
         phrase="you should be able to login",
