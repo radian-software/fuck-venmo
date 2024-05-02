@@ -105,6 +105,12 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="it seems that you were able to successfully log in",
     ),
+    DoesItWorkNow(
+        phrase="please attempt to log-in again",
+    ),
+    DoesItWorkNow(
+        phrase="I see that you were able to login",
+    ),
 ]
 
 
@@ -138,6 +144,8 @@ class VenmoClient:
         self.fuck_venmo_label = fastmail.get_mailbox_ids()["fuck-venmo"]["id"]
 
     def get_next_data(self, resp):
+        if resp.status_code == 403:
+            raise CaptchaException
         assert resp.status_code == 200, resp.status_code
         next_data_match = re.search(
             r'<script id="__NEXT_DATA__" type="application/json">([^<>]+)</script>',
