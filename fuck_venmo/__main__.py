@@ -36,9 +36,11 @@ def main():
 
     driver_license = os.environ["VENMO_DRIVER_LICENSE_URL"]
     driver_license_selfie = os.environ["VENMO_DRIVER_LICENSE_SELFIE_URL"]
+    error_message_screenshot = os.environ["VENMO_ERROR_MESSAGE_SCREENSHOT_URL"]
 
     driver_license_filename = Path(os.environ["VENMO_DRIVER_LICENSE_FILENAME"]).resolve()
     driver_license_selfie_filename = Path(os.environ["VENMO_DRIVER_LICENSE_SELFIE_FILENAME"]).resolve()
+    error_message_screenshot_filename = Path(os.environ["VENMO_ERROR_MESSAGE_SCREENSHOT_FILENAME"]).resolve()
 
     assert driver_license_filename.is_file()
     assert driver_license_selfie_filename.is_file()
@@ -165,7 +167,11 @@ def main():
     if needs_document_submission:
         v.submit_documents(
             last_form["url"],
-            [driver_license_filename, driver_license_selfie_filename],
+            [
+                driver_license_filename,
+                driver_license_selfie_filename,
+                error_message_screenshot_filename,
+            ],
         )
     else:
         log("document submission already completed since last new form, skipping")
@@ -199,6 +205,7 @@ def main():
         transaction_ledger=txn_ledger,
         driver_license_url=driver_license,
         driver_license_selfie_url=driver_license_selfie,
+        error_message_screenshot_url=error_message_screenshot,
         document_form_requested_time=last_form["ts"],
         document_form_completed_time=last_submission_ts,
         document_form_url=last_form["url"],

@@ -111,6 +111,18 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="I see that you were able to login",
     ),
+    DoesItWorkNow(
+        phrase="You should be able to log in",
+    ),
+    DoesItWorkNow(
+        phrase="it seems like you have been able to login",
+    ),
+    DoesItWorkNow(
+        phrase="I see that you were able to successfully log in",
+    ),
+    DoesItWorkNow(
+        phrase="is your issue resolved",
+    ),
 ]
 
 
@@ -464,7 +476,7 @@ class VenmoClient:
             time.sleep(1)
             log("filling zendesk document submission form")
             browser.find_element(By.ID, "request_anonymous_requester_email").send_keys(self.email_address)
-            browser.find_element(By.ID, "request_description").send_keys("All applicable identity documents")
+            browser.find_element(By.ID, "request_description").send_keys("All applicable documents")
             for p in document_filepaths:
                 browser.find_element(By.ID, "request-attachments").send_keys(str(p))
             log("waiting for documents to upload")

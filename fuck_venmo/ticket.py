@@ -20,6 +20,7 @@ class TicketInfo:
     transaction_ledger: list[Payment]
     driver_license_url: str
     driver_license_selfie_url: str
+    error_message_screenshot_url: str
     document_form_requested_time: datetime
     document_form_completed_time: datetime
     document_form_url: str
@@ -32,6 +33,8 @@ class TicketInfo:
 {self.preface}
 
 Please read this email in its entirety before responding, as previous support agents have failed to do so and have incorrectly requested information that was already provided. Failure to read this email will result in it being repeated.
+
+Please do not suggest in any way that the problem has been resolved, and do not ask me to confirm if the problem is resolved, unless you have already verified that ALL attempted login attempts in the past week have been successful.
 
 The following legitimate login attempt using correct account credentials was blocked by Venmo systems:
 
@@ -52,7 +55,8 @@ Additional information:
 - Account password has most recently been reset at {iso_format_but_not_fucked_up(self.last_password_reset)}
 - Photograph of unexpired driver license is available at <{self.driver_license_url}>
 - Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
-- The aforementioned identity documents were also uploaded at <{self.document_form_url}> most recently at {iso_format_but_not_fucked_up(self.document_form_completed_time)} as requested at {iso_format_but_not_fucked_up(self.document_form_requested_time)}
+- Example screenshot of error message is available at <{self.error_message_screenshot_url}>
+- The aforementioned documents were also uploaded at <{self.document_form_url}> most recently at {iso_format_but_not_fucked_up(self.document_form_completed_time)} as requested at {iso_format_but_not_fucked_up(self.document_form_requested_time)}
 
 For verification purposes, the following is a list of all Venmo transactions on the account from the last 3 months, in reverse chronological order:
 
