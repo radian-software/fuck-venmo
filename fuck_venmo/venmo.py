@@ -76,14 +76,24 @@ class DoesItWorkNow(SpecialPhrase):
         return True
 
 
+NO_DEVICE_ISSUES = 'The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."'
+
+
+NO_SUCCESSFUL_LOGIN = 'The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Note that it is irrelevant whether other login attempts have succeeded. Please correct the issue that resulted in the specific login attempt above being blocked."'
+
+
 SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="the error message is almost certainly an issue with either your ISP/cellular network",
-        reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."',
+        reason=NO_DEVICE_ISSUES,
     ),
     BannedPhrase(
         phrase="recommend doing the process in the meantime using the Venmo app and not through a computer",
-        reason='The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given."',
+        reason=NO_DEVICE_ISSUES,
+    ),
+    BannedPhrase(
+        phrase="Restore your device to factory settings",
+        reason=NO_DEVICE_ISSUES,
     ),
     BannedPhrase(
         phrase="we need you to first reset your password",
@@ -92,6 +102,10 @@ SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="can you please confirm the dollar amount",
         reason="The use of this phrase indicates that you did not read the preceding email, which provides a complete listing of all recent transactions on the account along with their dollar amounts.",
+    ),
+    BannedPhrase(
+        phrase="Without an exact error message in our records",
+        reason="The use of this phrase indicates that you did not read the preceding email, which clearly included the exact error message, as well as timestamps and IP addresses that are more than sufficient to identify the exact request that is failing.",
     ),
     DoesItWorkNow(
         phrase="let us know if you are able to login",
@@ -102,26 +116,34 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="you should be able to login",
     ),
-    DoesItWorkNow(
+    BannedPhrase(
         phrase="it seems that you were able to successfully log in",
+        reason=NO_SUCCESSFUL_LOGIN,
     ),
     DoesItWorkNow(
         phrase="please attempt to log-in again",
     ),
-    DoesItWorkNow(
+    BannedPhrase(
         phrase="I see that you were able to login",
+        reason=NO_SUCCESSFUL_LOGIN,
     ),
     DoesItWorkNow(
         phrase="You should be able to log in",
     ),
-    DoesItWorkNow(
+    BannedPhrase(
         phrase="it seems like you have been able to login",
+        reason=NO_SUCCESSFUL_LOGIN,
     ),
-    DoesItWorkNow(
+    BannedPhrase(
         phrase="I see that you were able to successfully log in",
+        reason=NO_SUCCESSFUL_LOGIN,
     ),
     DoesItWorkNow(
         phrase="is your issue resolved",
+    ),
+    BannedPhrase(
+        phrase="We can see that you have successfully logged in to your Venmo account",
+        reason=NO_SUCCESSFUL_LOGIN,
     ),
 ]
 
