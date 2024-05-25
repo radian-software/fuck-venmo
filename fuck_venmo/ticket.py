@@ -48,7 +48,7 @@ The following legitimate login attempt using correct account credentials was blo
 
 Please adjust your systems so that similar login attempts are not blocked. Note that it is irrelevant whether other login attempts have succeeded. Please correct the issue that resulted in the specific login attempt above being blocked.
 
-Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given.
+Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given. The same behavior occurs regardless of the device used - mobile application, web browser, etc.
 
 Additional information:
 
