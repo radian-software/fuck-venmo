@@ -69,7 +69,7 @@ class DoesItWorkNow(SpecialPhrase):
     phrase: str
 
     def get_message(self):
-        return f'Your prior email used the phrase "{self.phrase}", which suggests you think that the problem is resolved. Please be advised that if you are receiving this email, then the problem is not resolved, and your prior email has been discarded without being read. Refer to the details below for updated timestamps, and please try again.'
+        return f'Your prior email used the phrase "{self.phrase}", which suggests you think that the problem is resolved. Please be advised that you are wrong. Refer to the details below for updated timestamps, and please try again.'
 
     @property
     def triggers_autoresponse(self):
@@ -144,6 +144,13 @@ SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="We can see that you have successfully logged in to your Venmo account",
         reason=NO_SUCCESSFUL_LOGIN,
+    ),
+    BannedPhrase(
+        phrase="it appears that you have successfully resolved the login problem",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
+    DoesItWorkNow(
+        phrase="it seems like you were able to gain the access back to your account",
     ),
 ]
 
