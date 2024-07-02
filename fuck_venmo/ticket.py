@@ -57,6 +57,7 @@ Additional information:
 - Photograph of account-holder holding driver license is available at <{self.driver_license_selfie_url}>
 - Example screenshot of error message is available at <{self.error_message_screenshot_url}>
 - The aforementioned documents were also uploaded at <{self.document_form_url}> most recently at {iso_format_but_not_fucked_up(self.document_form_completed_time)} as requested at {iso_format_but_not_fucked_up(self.document_form_requested_time)}
+- The account-holder and the device accessing Venmo are both located within the United States
 
 For verification purposes, the following is a list of all Venmo transactions on the account from the last 3 months, in reverse chronological order:
 

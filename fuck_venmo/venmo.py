@@ -96,6 +96,14 @@ SPECIAL_PHRASES = [
         reason=NO_DEVICE_ISSUES,
     ),
     BannedPhrase(
+        phrase="Update your device's operating system",
+        reason=NO_DEVICE_ISSUES,
+    ),
+    BannedPhrase(
+        phrase="uninstall the Venmo app",
+        reason=NO_DEVICE_ISSUES,
+    ),
+    BannedPhrase(
         phrase="we need you to first reset your password",
         reason="The use of this phrase indicates that you did not read the preceding email, which clearly stated that the password on this account was reset, and provided a timestamp for this action.",
     ),
@@ -151,6 +159,12 @@ SPECIAL_PHRASES = [
     ),
     DoesItWorkNow(
         phrase="it seems like you were able to gain the access back to your account",
+    ),
+    DoesItWorkNow(
+        phrase="If you are still facing any issues",
+    ),
+    DoesItWorkNow(
+        phrase="let me know if you get any error message",
     ),
 ]
 
