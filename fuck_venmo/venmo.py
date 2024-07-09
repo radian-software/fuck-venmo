@@ -166,6 +166,13 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="let me know if you get any error message",
     ),
+    DoesItWorkNow(
+        phrase="try logging in from the web browser it will surely work",
+    ),
+    BannedPhrase(
+        phrase="I see that you have finally logged in",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
 ]
 
 
