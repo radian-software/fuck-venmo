@@ -173,6 +173,9 @@ SPECIAL_PHRASES = [
         phrase="I see that you have finally logged in",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
+    DoesItWorkNow(
+        phrase="are you still facing issues with logging in",
+    ),
 ]
 
 

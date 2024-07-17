@@ -43,6 +43,7 @@ The following legitimate login attempt using correct account credentials was blo
 - Timestamp: {iso_format_but_not_fucked_up(self.timestamp)}
 - IP address: {self.ip_address}
 - Endpoint: {self.endpoint}
+- Platform: Desktop (Firefox, Linux)
 - Status code: {self.status_code}
 - Error message: {self.error_message}
 
