@@ -176,6 +176,20 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="are you still facing issues with logging in",
     ),
+    DoesItWorkNow(
+        phrase="we have made a one-time adjustment to your account",
+    ),
+    BannedPhrase(
+        phrase="I recommend not resetting your password",
+        reason="The use of this phrase indicates that you did not read previous correspondence, where multiple agents repeatedly instructed me to reset my password. According to your own staff, it is not possible to avoid resetting my password.",
+    ),
+    BannedPhrase(
+        phrase="I see you have successfully logged in",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
+    DoesItWorkNow(
+        phrase="I request you to attempt logging in",
+    ),
 ]
 
 
