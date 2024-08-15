@@ -188,7 +188,10 @@ def main():
     else:
         replyto_id = v.get_replyto_id()
         subject = "Re: You have an update from Venmo"
-        preface = "\n\n".join(phrase.get_message() for phrase in special_phrases)
+        if special_phrases:
+            preface = "\n\n".join(phrase.get_message() for phrase in special_phrases)
+        else:
+            preface = "This message confirms that any actions that you've taken to resolve the reported problem have not been successful, as new login attempts are still being blocked. Updated details follow."
 
     num_outbound = v.count_outbound_emails()
 

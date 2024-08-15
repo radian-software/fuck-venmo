@@ -190,6 +190,14 @@ SPECIAL_PHRASES = [
     DoesItWorkNow(
         phrase="I request you to attempt logging in",
     ),
+    BannedPhrase(
+        phrase="provide a screenshot",
+        reason="The use of this phrase indicates that you did not read the previous email, which already included a screenshot.",
+    ),
+    BannedPhrase(
+        phrase="you're logged in",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
 ]
 
 
