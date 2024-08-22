@@ -21,6 +21,7 @@ from fuck_venmo.util import get_ipv4_address, log
 
 atexit = lambda: None
 
+
 def main():
     global atexit
 
@@ -38,9 +39,15 @@ def main():
     driver_license_selfie = os.environ["VENMO_DRIVER_LICENSE_SELFIE_URL"]
     error_message_screenshot = os.environ["VENMO_ERROR_MESSAGE_SCREENSHOT_URL"]
 
-    driver_license_filename = Path(os.environ["VENMO_DRIVER_LICENSE_FILENAME"]).resolve()
-    driver_license_selfie_filename = Path(os.environ["VENMO_DRIVER_LICENSE_SELFIE_FILENAME"]).resolve()
-    error_message_screenshot_filename = Path(os.environ["VENMO_ERROR_MESSAGE_SCREENSHOT_FILENAME"]).resolve()
+    driver_license_filename = Path(
+        os.environ["VENMO_DRIVER_LICENSE_FILENAME"]
+    ).resolve()
+    driver_license_selfie_filename = Path(
+        os.environ["VENMO_DRIVER_LICENSE_SELFIE_FILENAME"]
+    ).resolve()
+    error_message_screenshot_filename = Path(
+        os.environ["VENMO_ERROR_MESSAGE_SCREENSHOT_FILENAME"]
+    ).resolve()
 
     assert driver_license_filename.is_file()
     assert driver_license_selfie_filename.is_file()
@@ -50,6 +57,7 @@ def main():
     parser.add_argument("-n", "--new-ticket", action="store_true")
     parser.add_argument("-v", "--use-vpn", action="store_true")
     parser.add_argument("-a", "--automatic", action="store_true")
+    parser.add_argument("-d", "--debug", action="store_true")
     parser.add_argument("-y", "--yes", action="store_true")
     args = parser.parse_args()
 
@@ -79,7 +87,9 @@ def main():
         # them replying, in that we should wait again 4 days before
         # filing yet another ticket. To avoid falling into a loop of
         # new tickets.
-        ts_ignored = [ts for ts in outbound["prev_ts"] if ts > max(inbound["ts"], last_new["ts"])]
+        ts_ignored = [
+            ts for ts in outbound["prev_ts"] if ts > max(inbound["ts"], last_new["ts"])
+        ]
         if ts_ignored:
             oldest_ignored_ts = min(ts_ignored)
         else:
@@ -87,11 +97,17 @@ def main():
         if inbound["ts"] > outbound["ts"]:
             log("most recent email was inbound from venmo")
             if inbound["should_autoreply"]:
-                log("most recent inbound email flagged for automatic response, proceeding")
+                log(
+                    "most recent inbound email flagged for automatic response, proceeding"
+                )
             elif any(p.triggers_autoresponse for p in special_phrases):
-                log("most recent inbound email uses phrases that trigger autoresponse, proceeding unconditionally")
+                log(
+                    "most recent inbound email uses phrases that trigger autoresponse, proceeding unconditionally"
+                )
             else:
-                log("most recent inbound email not flagged for automatic response, aborting")
+                log(
+                    "most recent inbound email not flagged for automatic response, aborting"
+                )
                 return
         else:
             log("most recent email was outbound from us")
@@ -102,10 +118,14 @@ def main():
                 return
 
         if oldest_ignored_ts and (now - oldest_ignored_ts > timedelta(days=4)):
-            log("outbound emails have been ignored for more than 4 days, will file a new ticket")
+            log(
+                "outbound emails have been ignored for more than 4 days, will file a new ticket"
+            )
             args.new_ticket = True
         elif oldest_ignored_ts:
-            log("outbound emails have been ignored for less than 4 days, will not file a new ticket")
+            log(
+                "outbound emails have been ignored for less than 4 days, will not file a new ticket"
+            )
         else:
             log("no outbound emails have been ignored yet, will not file a new ticket")
 
@@ -141,7 +161,7 @@ def main():
         block_info = v.is_login_blocked()
     except CaptchaException:
         log("normal login is blocked, falling back to selenium")
-        block_info = v.is_login_blocked_selenium()
+        block_info = v.is_login_blocked_selenium(debug=args.debug)
 
     if not block_info:
         print("Login is not currently blocked")
@@ -172,12 +192,15 @@ def main():
                 driver_license_selfie_filename,
                 error_message_screenshot_filename,
             ],
+            debug=args.debug,
         )
     else:
         log("document submission already completed since last new form, skipping")
 
     with state_loaded() as state:
-        last_submission_ts = datetime.fromtimestamp(state["zendesk_document_submission"]["completed_end"])
+        last_submission_ts = datetime.fromtimestamp(
+            state["zendesk_document_submission"]["completed_end"]
+        )
 
     date = datetime.now().strftime("%Y-%m-%d")
 
@@ -233,6 +256,7 @@ def main():
         ticket_info.format(),
         replyto_id,
     )
+
 
 hc = os.environ["HEALTHCHECK_ENDPOINT"]
 

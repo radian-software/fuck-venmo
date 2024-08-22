@@ -17,7 +17,9 @@ def iso_format_but_not_fucked_up(dt: datetime):
 
 
 def from_iso_format_but_not_fucked_up(fmt: str):
-    return datetime.fromtimestamp(datetime.fromisoformat(fmt.replace("Z", "+00:00")).timestamp())
+    return datetime.fromtimestamp(
+        datetime.fromisoformat(fmt.replace("Z", "+00:00")).timestamp()
+    )
 
 
 def get_ipv4_address():
@@ -27,9 +29,10 @@ def get_ipv4_address():
 
 
 @contextmanager
-def headless_browser():
+def headless_browser(headless=True):
     options = FirefoxOptions()
-    options.add_argument("--headless")
+    if headless:
+        options.add_argument("--headless")
     browser = webdriver.Firefox(options=options)
     try:
         yield browser
