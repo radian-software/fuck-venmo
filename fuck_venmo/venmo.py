@@ -83,6 +83,9 @@ NO_DEVICE_ISSUES = 'The use of this phrase indicates that you did not read the p
 NO_SUCCESSFUL_LOGIN = 'The use of this phrase indicates that you did not read the preceding email, which clearly stated: "Note that it is irrelevant whether other login attempts have succeeded. Please correct the issue that resulted in the specific login attempt above being blocked."'
 
 
+NO_RESET_PASSWORD = "The use of this phrase indicates that you did not read previous correspondence, where multiple agents repeatedly instructed me to reset my password. According to your own staff, it is not possible to avoid resetting my password."
+
+
 SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="the error message is almost certainly an issue with either your ISP/cellular network",
@@ -133,29 +136,29 @@ SPECIAL_PHRASES = [
         phrase="please attempt to log-in again",
     ),
     BannedPhrase(
-        phrase="I see that you were able to login",
+        phrase="you were able to login",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
     DoesItWorkNow(
         phrase="You should be able to log in",
     ),
     BannedPhrase(
-        phrase="it seems like you have been able to login",
+        phrase="you have been able to login",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
     BannedPhrase(
-        phrase="I see that you were able to successfully log in",
+        phrase="were able to successfully log in",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
     DoesItWorkNow(
         phrase="is your issue resolved",
     ),
     BannedPhrase(
-        phrase="We can see that you have successfully logged in to your Venmo account",
+        phrase="you have successfully logged in",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
     BannedPhrase(
-        phrase="it appears that you have successfully resolved the login problem",
+        phrase="you have successfully resolved the login problem",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
     DoesItWorkNow(
@@ -182,7 +185,7 @@ SPECIAL_PHRASES = [
     ),
     BannedPhrase(
         phrase="I recommend not resetting your password",
-        reason="The use of this phrase indicates that you did not read previous correspondence, where multiple agents repeatedly instructed me to reset my password. According to your own staff, it is not possible to avoid resetting my password.",
+        reason=NO_RESET_PASSWORD,
     ),
     BannedPhrase(
         phrase="I see you have successfully logged in",
@@ -199,6 +202,36 @@ SPECIAL_PHRASES = [
         phrase="you're logged in",
         reason=NO_SUCCESSFUL_LOGIN,
     ),
+    BannedPhrase(
+        phrase="do not reset your password",
+        reason=NO_RESET_PASSWORD,
+    ),
+    DoesItWorkNow(
+        phrase="We were able to make a one-time adjustment to your account",
+    ),
+    DoesItWorkNow(
+        phrase="I hope this solves the issue",
+    ),
+    BannedPhrase(
+        phrase="you need to use the Venmo app",
+        reason=NO_DEVICE_ISSUES,
+    ),
+    BannedPhrase(
+        phrase="you were able to successfully able to log in",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
+    BannedPhrase(
+        phrase="please access your account via the app",
+        reason=NO_DEVICE_ISSUES,
+    ),
+    BannedPhrase(
+        phrase="you were able to successfully log in",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
+    BannedPhrase(
+        phrase="reset your password without accessing your Venmo account",
+        reason="It is not acceptable for you to impose restrictions on when I can and cannot log in to my account.",
+    )
 ]
 
 
