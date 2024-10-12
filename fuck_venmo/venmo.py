@@ -231,7 +231,11 @@ SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="reset your password without accessing your Venmo account",
         reason="It is not acceptable for you to impose restrictions on when I can and cannot log in to my account.",
-    )
+    ),
+    BannedPhrase(
+        phrase="please login from the app",
+        reason=NO_DEVICE_ISSUES,
+    ),
 ]
 
 
