@@ -86,6 +86,9 @@ NO_SUCCESSFUL_LOGIN = 'The use of this phrase indicates that you did not read th
 NO_RESET_PASSWORD = "The use of this phrase indicates that you did not read previous correspondence, where multiple agents repeatedly instructed me to reset my password. According to your own staff, it is not possible to avoid resetting my password."
 
 
+SCREENSHOT_PROVIDED = "The use of this phrase indicates that you did not read the previous email, which already included a screenshot."
+
+
 SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="the error message is almost certainly an issue with either your ISP/cellular network",
@@ -196,7 +199,11 @@ SPECIAL_PHRASES = [
     ),
     BannedPhrase(
         phrase="provide a screenshot",
-        reason="The use of this phrase indicates that you did not read the previous email, which already included a screenshot.",
+        reason=SCREENSHOT_PROVIDED,
+    ),
+    BannedPhrase(
+        phrase="help us with the screenshot of the error message",
+        reason=SCREENSHOT_PROVIDED,
     ),
     BannedPhrase(
         phrase="you're logged in",
@@ -235,6 +242,10 @@ SPECIAL_PHRASES = [
     BannedPhrase(
         phrase="please login from the app",
         reason=NO_DEVICE_ISSUES,
+    ),
+    BannedPhrase(
+        phrase="This code is unique to your account and is valid for 7 days",
+        reason="The use of this phrase indicates that you are attempting to provide me with one-time access to my Venmo account on a single device. This exact procedure has already been followed on multiple previous occasions, but as has been explained, it does nothing to solve the problem, and so your request has been ignored. Please try again.",
     ),
 ]
 

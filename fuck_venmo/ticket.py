@@ -34,9 +34,7 @@ class TicketInfo:
 
 Please read this email in its entirety before responding, as previous support agents have failed to do so and have incorrectly requested information that was already provided. Failure to read this email will result in it being repeated.
 
-Please do not suggest in any way that the problem has been resolved, and do not ask me to confirm if the problem is resolved, unless you have already verified that ALL attempted login attempts in the past week have been successful.
-
-The following legitimate login attempt using correct account credentials was blocked by Venmo systems:
+When logging in from a new device using correct credentials, I frequently receive spurious errors from Venmo which block me from logging in. Here are the details for one such login attempt, which was performed immediately before this email was sent:
 
 - Username: {self.username}
 - Email address: {self.email_address}
@@ -47,9 +45,11 @@ The following legitimate login attempt using correct account credentials was blo
 - Status code: {self.status_code}
 - Error message: {self.error_message}
 
-Please adjust your systems so that similar login attempts are not blocked. Note that it is irrelevant whether other login attempts have succeeded. Please correct the issue that resulted in the specific login attempt above being blocked.
+Please adjust your systems so that similar login attempts are not blocked. Please note that immediately after your reply, I will perform another login from another new device, and you will receive another follow-up if that login is blocked. I am not able to guarantee that I will only access Venmo from a single device, so any solution that does not solve the problem for new devices will not suffice to close this ticket. Such solutions, if presented, will be ignored and my request will be restated.
 
-Please note that this is an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given. The same behavior occurs regardless of the device used - mobile application, web browser, etc.
+Please note that this has been confirmed to be an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given. The same behavior occurs regardless of the device used - mobile application, web browser, etc.
+
+If you suggest any troubleshooting step which I have already performed, or request that I change any aspect of my device or network without a specific technical reason, your email will be ignored and my request will be restated.
 
 Additional information:
 
