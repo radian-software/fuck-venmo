@@ -247,6 +247,10 @@ SPECIAL_PHRASES = [
         phrase="This code is unique to your account and is valid for 7 days",
         reason="The use of this phrase indicates that you are attempting to provide me with one-time access to my Venmo account on a single device. This exact procedure has already been followed on multiple previous occasions, but as has been explained, it does nothing to solve the problem, and so your request has been ignored. Please try again.",
     ),
+    BannedPhrase(
+        phrase="you successfully accessed your account",
+        reason=NO_SUCCESSFUL_LOGIN,
+    ),
 ]
 
 

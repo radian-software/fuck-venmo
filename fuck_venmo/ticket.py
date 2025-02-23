@@ -47,6 +47,8 @@ When logging in from a new device using correct credentials, I frequently receiv
 
 Please adjust your systems so that similar login attempts are not blocked. Please note that immediately after your reply, I will perform another login from another new device, and you will receive another follow-up if that login is blocked. I am not able to guarantee that I will only access Venmo from a single device, so any solution that does not solve the problem for new devices will not suffice to close this ticket. Such solutions, if presented, will be ignored and my request will be restated.
 
+Please note that I am aware that some existing devices are able to log in to Venmo successfully. This is irrelevant, because the issue is with new devices, not existing devices. Any observation that previous login attempts have succeeded will be ignored. The issue is not resolved until ALL legitimate login attempts from new devices are allowed.
+
 Please note that this has been confirmed to be an issue with your systems, and not with the device, network, or application used to access them. No changes will be made to the device, network, or application used to access your systems unless a specific technical reason is given. The same behavior occurs regardless of the device used - mobile application, web browser, etc.
 
 If you suggest any troubleshooting step which I have already performed, or request that I change any aspect of my device or network without a specific technical reason, your email will be ignored and my request will be restated.
