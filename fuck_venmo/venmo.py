@@ -521,7 +521,7 @@ class VenmoClient:
             log("submit password form")
             browser.find_element(By.ID, "password").send_keys(self.password)
             browser.find_element(By.ID, "btnLogin").click()
-            time.sleep(5)
+            time.sleep(10)
             if browser.current_url == "https://account.venmo.com/":
                 return None
             if browser.current_url.startswith(
